@@ -9,6 +9,8 @@ public class User {
 
     private UserType userType;
 
+    private int voteTicket = 10;
+
     public String getName() {
         return name;
     }
@@ -31,5 +33,13 @@ public class User {
 
     public void setUserType(UserType userType) {
         this.userType = userType;
+    }
+
+    public int getVoteTicket() {
+        return voteTicket;
+    }
+
+    public void setVoteTicket(int voteTicket) {
+        this.voteTicket = voteTicket;
     }
 }

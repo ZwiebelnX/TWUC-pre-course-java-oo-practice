@@ -2,7 +2,7 @@ package com.twu.model;
 
 import com.twu.model.type.TopSearchType;
 
-public class TopSearch {
+public class TopSearch implements Comparable<TopSearch>{
 
     private String name;
 
@@ -58,5 +58,14 @@ public class TopSearch {
 
     public void setTopSearchType(TopSearchType topSearchType) {
         this.topSearchType = topSearchType;
+    }
+
+    @Override
+    public int compareTo(TopSearch topSearch) {
+        if (this.isPurchase || topSearch.isPurchase) {
+            return 0;
+        } else {
+            return topSearch.heat - this.heat;
+        }
     }
 }
