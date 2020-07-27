@@ -28,6 +28,10 @@ public class UserManager {
         return INSTANCE;
     }
 
+    public static User getCurrentUser() {
+        return currentUser;
+    }
+
     public void login(Scanner in) {
         OutputFormatter.printInfo("请选择登录模式");
         System.out.println("1. 普通用户");

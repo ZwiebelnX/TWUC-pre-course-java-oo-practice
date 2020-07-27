@@ -13,7 +13,7 @@ public class Main {
 
     public static boolean EXIT_FLAG = false;
 
-    private static Deque<String> currentPath = new ArrayDeque<>();
+    private static final Deque<String> CURRENT_PATH = new ArrayDeque<>();
 
     public static void main(String[] args) {
         System.out.println(System.getProperty("user.dir"));
@@ -24,13 +24,15 @@ public class Main {
 
         while (!EXIT_FLAG) {
             if (!IS_LOGIN) {
-                currentPath.clear();
-                currentPath.push("登录");
+                CURRENT_PATH.clear();
+                CURRENT_PATH.push("登录");
                 printCurrentPath();
                 userManager.login(in);
             } else {
-                currentPath.clear();
-                currentPath.push("主页");
+                CURRENT_PATH.clear();
+                CURRENT_PATH.push("主页");
+                printCurrentPath();
+                topSearchRankingManager.mainPage(in);
             }
         }
     }
@@ -38,7 +40,7 @@ public class Main {
     private static void printCurrentPath() {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append(">>>>>> ");
-        currentPath.forEach(s -> stringBuilder.append(s).append(" -> "));
+        CURRENT_PATH.forEach(s -> stringBuilder.append(s).append(" -> "));
         System.out.println(stringBuilder.toString());
     }
 }

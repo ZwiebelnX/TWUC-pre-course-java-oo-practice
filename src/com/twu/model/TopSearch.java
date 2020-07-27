@@ -3,6 +3,7 @@ package com.twu.model;
 import com.twu.model.type.TopSearchType;
 
 public class TopSearch {
+
     private String name;
 
     private int heat;
@@ -11,7 +12,13 @@ public class TopSearch {
 
     private boolean isPurchase;
 
+    private String createUserName;
+
     private TopSearchType topSearchType;
+
+    public String getCreateUserName() { return createUserName; }
+
+    public void setCreateUserName(String createUserName) { this.createUserName = createUserName; }
 
     public String getName() {
         return name;
