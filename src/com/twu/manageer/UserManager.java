@@ -3,6 +3,7 @@ package com.twu.manageer;
 import com.twu.Main;
 import com.twu.model.User;
 import com.twu.model.type.UserType;
+import com.twu.utility.OutputFormatter;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -28,25 +29,33 @@ public class UserManager {
     }
 
     public void login(Scanner in) {
-        System.out.println("====== 请选择登录模式 ======");
+        OutputFormatter.printInfo("请选择登录模式");
         System.out.println("1. 普通用户");
         System.out.println("2. 管理员");
         switch (in.nextInt()) {
             case 1:
             default:
-                System.out.println("====== 请输入名称 ======");
-                String userName = in.next();
+                String userName;
+                while (true) {
+                    OutputFormatter.printInfo("请输入昵称");
+                    userName = in.next();
+                    if (userName.length() > 0) {
+                        break;
+                    } else {
+                        OutputFormatter.printError("昵称不能为空");
+                    }
+                }
 
                 currentUser = new User();
                 currentUser.setName(userName);
                 currentUser.setUserType(UserType.USER_NORMAL);
 
                 Main.IS_LOGIN = true;
-                System.out.printf("====== 欢迎登录：%s ======", currentUser.getName());
+                OutputFormatter.printInfo(String.format("欢迎登录 %s", currentUser.getName()));
                 break;
             case 2:
                 Map<String, String> adminMap = new HashMap<>();
-                File file = new File("./src/com/twu/static/admin.txt");
+                File file = new File("./src/static/admin.txt");
                 try (InputStreamReader reader = new InputStreamReader(new FileInputStream(file), StandardCharsets.UTF_8)) {
                     BufferedReader bufferedReader = new BufferedReader(reader);
                     String line;
@@ -57,16 +66,17 @@ public class UserManager {
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-                System.out.println("====== 请输入用户名 ======");
+                OutputFormatter.printInfo("请输入管理员用户名");
                 String adminName = in.next();
                 if (!adminMap.containsKey(adminName)) {
-                    System.out.println("!!!!!! 用户名不存在 !!!!!!");
+                    OutputFormatter.printError("用户名不存在");
                     break;
                 }
-                System.out.println("====== 请输入密码 ======");
+
+                OutputFormatter.printInfo("请输入密码");
                 String adminPassword = in.next();
                 if (!adminPassword.equals(adminMap.get(adminName))) {
-                    System.out.println("!!!!!! 密码错误 !!!!!!");
+                    OutputFormatter.printError("密码错误");
                     break;
                 } else {
                     Main.IS_LOGIN = true;
@@ -75,7 +85,7 @@ public class UserManager {
                     currentUser.setPassword(adminPassword);
                     currentUser.setUserType(UserType.USER_ADMIN);
 
-                    System.out.printf("====== 欢迎登录：%s ======", currentUser.getName());
+                    OutputFormatter.printInfo(String.format("欢迎登录 %s", currentUser.getName()));
                 }
                 break;
         }
