@@ -6,6 +6,7 @@ import com.twu.model.type.UserType;
 import com.twu.utility.OutputFormatter;
 
 import java.util.Collections;
+import java.util.InputMismatchException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Scanner;
@@ -80,15 +81,7 @@ public class TopSearchRankingManager {
 
     private void addTopSearch(Scanner in) {
         OutputFormatter.printInfo("请输入热搜名称");
-        String topSearchName;
-        while (true) {
-            topSearchName = in.next();
-            if (topSearchName.length() > 0) {
-                break;
-            } else {
-                OutputFormatter.printError("热搜名称不能为空");
-            }
-        }
+        String topSearchName = readNonEmptyString(in, "热搜名称不能为空");
         TopSearch newTopSearch = new TopSearch();
         newTopSearch.setName(topSearchName);
         newTopSearch.setHeat(0);
@@ -101,7 +94,7 @@ public class TopSearchRankingManager {
     }
 
     private void addSuperTopSearch(Scanner in) {
-
+        OutputFormatter.printInfo("请输入超级热搜名称");
     }
 
     private void purchaseTopSearch(Scanner in) {
@@ -126,20 +119,45 @@ public class TopSearchRankingManager {
         TopSearch votingSearch = RANKING.get(ranking - 1);
         int haveTicket = UserManager.getCurrentUser().getVoteTicket();
         OutputFormatter.printInfo(String.format("请输入票数，您现在拥有%d票", haveTicket));
-        int tickets;
-        while (true) {
-            tickets = in.nextInt();
-            if (tickets >= 1 && tickets <= haveTicket) {
-                break;
-            } else {
-                OutputFormatter.printError("请输入正确的票数");
-            }
-        }
+        int tickets = readIllegalNumber(in, 1, haveTicket, "请输入合理的票数");
 
         votingSearch.setHeat(votingSearch.getHeat() + (votingSearch.getTopSearchType() == TopSearchType.SEARCH_SUPER
             ? tickets * 2 : tickets));
 
         Collections.sort(RANKING);
+    }
+
+    private String readNonEmptyString(Scanner in, String errMsg) {
+        String result;
+        while (true) {
+            result = in.next();
+            if (result.length() > 0) {
+                break;
+            } else {
+                OutputFormatter.printError(errMsg);
+            }
+        }
+        return result;
+    }
+
+    private int readIllegalNumber(Scanner in, int min, int max, String errMsg) {
+        int result;
+        while (true) {
+            while (true) {
+                try {
+                    result = in.nextInt();
+                    break;
+                } catch (InputMismatchException e) {
+                    OutputFormatter.printError("请输入数字");
+                }
+            }
+            if (result >= min && result <= max) {
+                break;
+            } else {
+                OutputFormatter.printError(errMsg);
+            }
+        }
+        return result;
     }
 
 }
