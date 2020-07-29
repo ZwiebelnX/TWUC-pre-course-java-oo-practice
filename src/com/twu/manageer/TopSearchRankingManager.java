@@ -5,17 +5,19 @@ import com.twu.model.type.TopSearchType;
 import com.twu.model.type.UserType;
 import com.twu.utility.OutputFormatter;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.InputMismatchException;
-import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Scanner;
 
 public class TopSearchRankingManager {
 
     private final static TopSearchRankingManager INSTANCE = new TopSearchRankingManager();
 
-    private final static List<TopSearch> RANKING = new LinkedList<>();
+    private final static List<TopSearch> RANKING = new ArrayList<>();
 
     private TopSearchRankingManager() {
     }
@@ -81,12 +83,9 @@ public class TopSearchRankingManager {
 
     private void addTopSearch(Scanner in) {
         OutputFormatter.printInfo("请输入热搜名称");
-        String topSearchName = readNonEmptyString(in, "热搜名称不能为空");
+        String topSearchName = readNonEmptyString(in);
         TopSearch newTopSearch = new TopSearch();
         newTopSearch.setName(topSearchName);
-        newTopSearch.setHeat(0);
-        newTopSearch.setPrize(0);
-        newTopSearch.setPurchase(false);
         newTopSearch.setTopSearchType(TopSearchType.SEARCH_NORMAL);
         newTopSearch.setCreateUserName(UserManager.getCurrentUser().getName());
         RANKING.add(newTopSearch);
@@ -95,6 +94,34 @@ public class TopSearchRankingManager {
 
     private void addSuperTopSearch(Scanner in) {
         OutputFormatter.printInfo("请输入超级热搜名称");
+        String superTopSearchName = readNonEmptyString(in);
+
+        boolean isContains = false;
+        for (TopSearch topSearch : RANKING) {
+            if (superTopSearchName.equals(topSearch.getName())) {
+                isContains = true;
+                if (topSearch.getTopSearchType() != TopSearchType.SEARCH_SUPER) {
+                    OutputFormatter.printError("已存在相同超级热搜");
+                    break;
+                }
+                OutputFormatter.printInfo("热搜<" + superTopSearchName + ">已存在，是否升级为超级热搜？[y/n]");
+                String confirmInput = readNonEmptyString(in);
+                if (!confirmInput.equals("n")) {
+                    topSearch.setTopSearchType(TopSearchType.SEARCH_SUPER);
+                    OutputFormatter.printInfo("升级热搜成功");
+                }
+                break;
+            }
+        }
+        TopSearch newSuperTopSearch;
+        if (!isContains) {
+            newSuperTopSearch = new TopSearch();
+            newSuperTopSearch.setName(superTopSearchName);
+            newSuperTopSearch.setTopSearchType(TopSearchType.SEARCH_SUPER);
+            newSuperTopSearch.setCreateUserName(UserManager.getCurrentUser().getName());
+            RANKING.add(newSuperTopSearch);
+            OutputFormatter.printInfo("添加热搜成功");
+        }
     }
 
     private void purchaseTopSearch(Scanner in) {
@@ -106,35 +133,37 @@ public class TopSearchRankingManager {
     }
 
     private void voteTopSearch(Scanner in) {
-        OutputFormatter.printInfo("请输入要投票热搜的排名");
-        int ranking;
-        while (true) {
-            ranking = in.nextInt();
-            if (ranking >= 1 && ranking <= RANKING.size()) {
-                break;
-            } else {
-                OutputFormatter.printError("请输入正确的排名");
-            }
-        }
-        TopSearch votingSearch = RANKING.get(ranking - 1);
         int haveTicket = UserManager.getCurrentUser().getVoteTicket();
+        if (haveTicket == 0) {
+            OutputFormatter.printError("您当前票数为0 不可投票");
+            return;
+        }
+        if (RANKING.size() == 0) {
+            OutputFormatter.printError("当前没有热搜 不可投票");
+            return;
+        }
+
+        OutputFormatter.printInfo("请输入要投票热搜的排名");
+        int ranking = readIllegalNumber(in, 1, RANKING.size() - 1, "请输入正确的排名");
+        TopSearch votingSearch = RANKING.get(ranking - 1);
+
         OutputFormatter.printInfo(String.format("请输入票数，您现在拥有%d票", haveTicket));
         int tickets = readIllegalNumber(in, 1, haveTicket, "请输入合理的票数");
-
         votingSearch.setHeat(votingSearch.getHeat() + (votingSearch.getTopSearchType() == TopSearchType.SEARCH_SUPER
             ? tickets * 2 : tickets));
 
-        Collections.sort(RANKING);
+        // Collections.sort(RANKING);
+        sortRanking();
     }
 
-    private String readNonEmptyString(Scanner in, String errMsg) {
+    private String readNonEmptyString(Scanner in) {
         String result;
         while (true) {
             result = in.next();
             if (result.length() > 0) {
                 break;
             } else {
-                OutputFormatter.printError(errMsg);
+                OutputFormatter.printError("输入不能为空");
             }
         }
         return result;
@@ -160,4 +189,17 @@ public class TopSearchRankingManager {
         return result;
     }
 
+    private void sortRanking() {
+        Map<Integer, TopSearch> purchaseMap = new HashMap<>();
+
+        // 逆序遍历防止越界
+        for (int i = RANKING.size() - 1; i > 0 ; i--) {
+            if (RANKING.get(i).isPurchase()) {
+                purchaseMap.put(i, RANKING.get(i));
+                RANKING.remove(i);
+            }
+        }
+        Collections.sort(RANKING);
+        purchaseMap.forEach(RANKING::add);
+    }
 }

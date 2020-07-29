@@ -2,6 +2,8 @@ package com.twu.model;
 
 import com.twu.model.type.TopSearchType;
 
+import java.util.Objects;
+
 public class TopSearch implements Comparable<TopSearch>{
 
     private String name;
@@ -67,5 +69,22 @@ public class TopSearch implements Comparable<TopSearch>{
         } else {
             return topSearch.heat - this.heat;
         }
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        TopSearch topSearch = (TopSearch) o;
+        return name.equals(topSearch.name);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(name, heat, prize, isPurchase, createUserName, topSearchType);
     }
 }
