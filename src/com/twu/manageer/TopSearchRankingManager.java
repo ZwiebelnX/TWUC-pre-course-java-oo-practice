@@ -140,7 +140,9 @@ public class TopSearchRankingManager {
                 OutputFormatter.printInfo("已存在同名热搜。是否继续购买？[y]/n");
                 if (!in.next().equals("n")) {
                     purchaseTopSearch = topSearch;
+                    purchaseTopSearch.setPurchase(true);
                     RANKING.remove(topSearch);
+                    break;
                 } else {
                     OutputFormatter.printError("购买失败，用户取消购买");
                     return;
@@ -227,7 +229,7 @@ public class TopSearchRankingManager {
         Map<Integer, TopSearch> purchaseMap = new HashMap<>();
 
         // 逆序遍历防止越界
-        for (int i = RANKING.size() - 1; i > 0 ; i--) {
+        for (int i = RANKING.size() - 1; i >= 0 ; i--) {
             if (RANKING.get(i).isPurchase()) {
                 purchaseMap.put(i, RANKING.get(i));
                 RANKING.remove(i);
