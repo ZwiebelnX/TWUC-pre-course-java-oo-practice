@@ -125,6 +125,41 @@ public class TopSearchRankingManager {
     }
 
     private void purchaseTopSearch(Scanner in) {
+        OutputFormatter.printInfo("请输入要购买的热搜排名");
+        int rankingNumber = readIllegalNumber(in, 1, RANKING.size() + 1, "请输入正确的排名数字");
+
+        OutputFormatter.printInfo("请输入热搜名称");
+        String topSearchName = readNonEmptyString(in);
+
+        OutputFormatter.printInfo("请输入购买金额");
+        int prize = readIllegalNumber(in, 1, Integer.MAX_VALUE, "请输入正确的金额");
+
+        TopSearch purchaseTopSearch = null;
+        for (TopSearch topSearch : RANKING) {
+            if (topSearch.getName().equals(topSearchName)) {
+                OutputFormatter.printInfo("已存在同名热搜。是否继续购买？[y]/n");
+                if (!in.next().equals("n")) {
+                    purchaseTopSearch = topSearch;
+                    RANKING.remove(topSearch);
+                } else {
+                    OutputFormatter.printError("购买失败，用户取消购买");
+                    return;
+                }
+            }
+        }
+        if (purchaseTopSearch == null) {
+            purchaseTopSearch = new TopSearch();
+            purchaseTopSearch.setName(topSearchName);
+            purchaseTopSearch.setPurchase(true);
+            purchaseTopSearch.setPrize(prize);
+            purchaseTopSearch.setCreateUserName(UserManager.getCurrentUser().getName());
+        }
+
+        if (rankingNumber == RANKING.size() + 1) {
+            RANKING.add(purchaseTopSearch);
+        } else {
+            RANKING.set(rankingNumber - 1, purchaseTopSearch);
+        }
 
     }
 
@@ -144,15 +179,14 @@ public class TopSearchRankingManager {
         }
 
         OutputFormatter.printInfo("请输入要投票热搜的排名");
-        int ranking = readIllegalNumber(in, 1, RANKING.size() - 1, "请输入正确的排名");
+        int ranking = readIllegalNumber(in, 1, RANKING.size(), "请输入正确的排名");
         TopSearch votingSearch = RANKING.get(ranking - 1);
-
+        OutputFormatter.printInfo(String.format("您现在正在为<%s>投票", votingSearch.getName()));
         OutputFormatter.printInfo(String.format("请输入票数，您现在拥有%d票", haveTicket));
         int tickets = readIllegalNumber(in, 1, haveTicket, "请输入合理的票数");
         votingSearch.setHeat(votingSearch.getHeat() + (votingSearch.getTopSearchType() == TopSearchType.SEARCH_SUPER
             ? tickets * 2 : tickets));
-
-        // Collections.sort(RANKING);
+        UserManager.getCurrentUser().setVoteTicket(haveTicket - tickets);
         sortRanking();
     }
 
